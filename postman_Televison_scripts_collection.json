@@ -1,0 +1,131 @@
+{
+    "info": {
+        "_postman_id": "accbdac2-606d-4885-9a20-72c55d4ac583",
+        "name": "Televison collection",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "description": ""
+    },
+    "item": [
+        {
+            "name": "https://localhost:5000/api/v1/shows",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:5000/api/v1/shows?network=NBC",
+                    "query": [
+                        {
+                            "key": "network",
+                            "value": "NBC"
+                        }
+                    ],
+                    "variable": [],
+                    "path": [
+                        "api",
+                        "v1",
+                        "shows"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "5000"
+                },
+                "body": {
+                    "mode": "raw",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    },
+                    "raw": "{\n  \"network\": \"NBC\"\n}"
+                }
+            }
+        },
+        {
+            "name": "http://localhost:5000/api/v1/packages/1",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:5000/api/v1/packages/1",
+                    "path": [
+                        "api",
+                        "v1",
+                        "packages",
+                        "1"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "5000"
+                }
+            }
+        },
+        {
+            "name": "http://localhost:5000/api/v1/packages/",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:5000/api/v1/packages/",
+                    "path": [
+                        "api",
+                        "v1",
+                        "packages"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "5000"
+                }
+            }
+        },
+        {
+            "name": "Post new show",
+            "request": {
+                "method": "POST",
+                "url": {
+                    "raw": "http://localhost:5000/api/v1/shows",
+                    "path": [
+                        "api",
+                        "v1",
+                        "shows"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "5000"
+                },
+                "body": {
+                    "mode": "raw",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    },
+                    "raw": "{\n  \"title\": \"Breaking Bad\",\n  \"network\": \"NBC\",\n  \"imdbRating\": 4.1\n}"
+                }
+            }
+        },
+        {
+            "name": "Get all networks",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:5000/api/v1/networks",
+                    "path": [
+                        "api",
+                        "v1",
+                        "networks"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "5000"
+                }
+            }
+        }
+    ]
+}

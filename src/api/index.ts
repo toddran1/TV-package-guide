@@ -55,18 +55,17 @@ const sql = `
         FROM packages p 
     `;
 
-// TODO make some api calls here. use makeDbCall(db
+    const sql4 = `
+        INSERT INTO shows (title, network, imdbRating)
+        VALUES (?, ?, ?)
+    `;
+
+    const sql5 = `
+        SELECT *
+        FROM package_networks
+    `;
 
 
-//Boilerplate / time saver
-
-
-/**
- * Makes a database call by executing a given SQL query and returns a Promise that resolves with the result.
- * Successful call will return an array of rows any[]
- * @param {string} sql - The SQL query to execute.
- * @returns {Promise<any>} - A Promise that resolves with the result of the database call.
- */
 const makeDbCall = (sql: string,  params?: string[]): Promise<any> => new Promise((resolve, reject) => {
     const db = getDatabase();
     // @ts-ignore
@@ -102,6 +101,65 @@ router.get('/shows', async(req, res) => {
         res.status(500).json({error: 'Internal Server Error'});
     }
 });
+
+router.post('/shows', async (req, res) => {
+    try {
+        // Destructure request body safely
+        const { title, network, imdbRating } = req?.body ?? {};
+
+        // Basic validation
+        if ((!title && typeof title !== "string") || (!network && typeof network !== "string") || imdbRating === undefined) {
+            return res.status(400).json({ error: "Missing required fields: title (string), network (string), and imdbRating (number)." });
+        }
+
+        // Check if imdbRating is a valid number
+        if (typeof imdbRating !== "number" || imdbRating < 0 || imdbRating > 10) {
+            return res.status(400).json({ error: "Invalid IMDb rating. It must be a number between 0 and 10." });
+        }
+
+        // **Check if the network exists in the package_networks table**
+        const networkCheckSQL = `SELECT COUNT(*) AS count FROM package_networks WHERE network = ?`;
+        const networkExists = await makeDbCall(networkCheckSQL, [network]);
+
+        if (!networkExists || networkExists[0].count === 0) {
+            return res.status(404).json({ error: `Network '${network}' does not exist. Please choose a valid network.` });
+        }
+
+        // **Check if the show already exists in the shows table for that network**
+        const showExistsSQL = `SELECT COUNT(*) AS count FROM shows WHERE title = ? AND network = ?`;
+        const showExists = await makeDbCall(showExistsSQL, [title, network]);
+
+        if (showExists[0].count > 0) {
+            return res.status(409).json({ error: `The show '${title}' already exists on '${network}'.` });
+        }
+
+        // Execute the database call
+        await makeDbCall(sql4, [title, network, imdbRating]);
+
+        // Set response headers
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+        // Send success response with the new show's details
+        console.log('Success, show added!');
+        res.status(201).json({
+            message: "Show added successfully!",
+            data: { title, network, imdbRating }
+        });
+
+    } catch (error: any) {
+        console.error("Database error:", error);
+
+        // Handle specific SQLite errors if applicable
+        if (error?.code === "SQLITE_CONSTRAINT") {
+            return res.status(409).json({ error: "Duplicate entry or constraint violation." });
+        }
+
+        // Generic server error
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
 
 router.get('/packages/:id', async (req, res) => {
     try {
@@ -151,5 +209,24 @@ router.get('/packages/', async (req, res) => {
         res.status(500).json({error: 'Internal Server Error'});
     }
 });
+
+router.get('/networks', async(req, res) => {
+    try {
+        const result = await makeDbCall(sql5);
+
+        if (!result || result.length === 0) {
+            return res.status(404).json({error: 'No networks found for the given network'});
+        }
+        console.log('result: ', result);
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        res.status(200).json(result);
+
+    } catch (error) {
+        console.error('error:', error);
+        res.status(500).json({error: 'Internal Server Error'});
+    }
+});
+
 
 export default router;
